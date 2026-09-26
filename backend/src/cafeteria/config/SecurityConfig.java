@@ -1,6 +1,8 @@
 package cafeteria.config;
 
 import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -30,7 +32,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource(CorsProperties corsProperties) {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(corsProperties.getOrigins());
+        Set<String> allowedOrigins = new LinkedHashSet<>(List.of(
+            "https://tecmipickup-appp.vercel.app",
+            "http://localhost:5173",
+            "http://localhost:3000"));
+        allowedOrigins.addAll(corsProperties.getOrigins());
+        configuration.setAllowedOrigins(List.copyOf(allowedOrigins));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization", "Cache-Control"));
