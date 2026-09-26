@@ -202,6 +202,7 @@ export function mapRestaurant(raw: unknown, index: number): Restaurant | null {
     id,
     slug,
     name,
+    logo: id === "tienda-buho" ? "/vithia-logo.png" : id === "tienda-central" ? "/jorgillos-logo.png" : undefined,
     description: asString(pick(row, "descripcion", "description")) || undefined,
     categories: categoryIds.filter(Boolean),
     icon: glyphFromLabel(asString(pick(row, "icon", "icono"), name)),

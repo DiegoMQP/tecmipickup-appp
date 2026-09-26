@@ -11,6 +11,7 @@ export type Restaurant = {
   slug: string;
   name: string;
   description?: string;
+  logo?: string;
   categories: string[];
   icon: FoodGlyph;
   /** Soft background tint for the visual tile. Keep within the neutral set. */

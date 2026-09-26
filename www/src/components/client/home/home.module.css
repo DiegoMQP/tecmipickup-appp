@@ -600,6 +600,11 @@
   object-fit: cover;
 }
 
+.tileLogo {
+  padding: 3px;
+  object-fit: contain;
+}
+
 .tileMist {
   background: #f4f4f4;
 }

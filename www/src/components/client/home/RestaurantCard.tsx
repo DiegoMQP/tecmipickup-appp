@@ -50,7 +50,15 @@ export default function RestaurantCard({ restaurant, favorite, onToggleFavorite 
       >
         <div className={`${styles.tile} ${featured?.image ? styles.tilePhoto : tileClass[restaurant.tint]}`}>
           {restaurant.promo ? <span className={styles.promoBadge}>{restaurant.promo}</span> : null}
-          {featured?.image ? (
+          {restaurant.logo ? (
+            <Image
+              src={restaurant.logo}
+              alt={`${restaurant.name} logo`}
+              fill
+              sizes="72px"
+              className={styles.tileLogo}
+            />
+          ) : featured?.image ? (
             <Image
               src={featured.image}
               alt=""
