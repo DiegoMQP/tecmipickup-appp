@@ -10,5 +10,4 @@ import java.util.List;
 @ConfigurationProperties(prefix = "app.cors")
 public class CorsProperties {
     private List<String> origins = new ArrayList<>();
-    private List<String> patterns = new ArrayList<>();
 }
