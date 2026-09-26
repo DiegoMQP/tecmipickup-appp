@@ -46,19 +46,19 @@ public class CatalogoSeeder implements CommandLineRunner {
     @Value("${app.admin.password:}")
     private String adminPassword;
 
-    @Value("${TECMIPICKUP_RESTAURANT_NAME:Cuenta de restaurante}")
+    @Value("${TECMIPICKUP_RESTAURANT_NAME:Jorgillos}")
     private String restaurantName;
 
-    @Value("${TECMIPICKUP_RESTAURANT_EMAIL:}")
+    @Value("${TECMIPICKUP_RESTAURANT_EMAIL:jorgillos@admin.com}")
     private String restaurantEmail;
 
     @Value("${TECMIPICKUP_RESTAURANT_PASSWORD:}")
     private String restaurantPassword;
 
-    @Value("${TECMIPICKUP_RESTAURANT_MATRICULA:}")
+    @Value("${TECMIPICKUP_RESTAURANT_MATRICULA:JORGILLOS}")
     private String restaurantMatricula;
 
-    @Value("${TECMIPICKUP_RESTAURANT_STORE_ID:}")
+    @Value("${TECMIPICKUP_RESTAURANT_STORE_ID:tienda-central}")
     private String restaurantStoreId;
 
     @Override
