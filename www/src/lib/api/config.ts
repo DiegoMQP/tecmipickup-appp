@@ -1,20 +1,16 @@
-const DEFAULT_ORIGIN = "https://tecmipickup.fly.dev";
+const LOCAL_ORIGIN = "http://localhost:8080";
 
 function normalizeOrigin(value: string) {
   return value.replace(/\/$/, "").replace(/\/api$/i, "");
 }
 
 function resolveBaseUrl(): string {
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return normalizeOrigin(process.env.NEXT_PUBLIC_API_URL);
+  const configuredOrigin = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (configuredOrigin) {
+    return normalizeOrigin(configuredOrigin);
   }
-  if (typeof window !== "undefined") {
-    const host = window.location.hostname;
-    if (host === "localhost" || host === "127.0.0.1") {
-      return "http://localhost:8080";
-    }
-  }
-  return DEFAULT_ORIGIN;
+
+  return LOCAL_ORIGIN;
 }
 
 export const apiConfig = {
