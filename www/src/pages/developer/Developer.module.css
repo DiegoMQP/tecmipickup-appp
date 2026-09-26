@@ -1,0 +1,72 @@
+.page {
+  min-height: 100vh;
+  padding: 34px clamp(18px, 4vw, 56px) 54px;
+  background: #f6f8f6;
+  color: #202923;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  max-width: 1440px;
+  margin: 0 auto 28px;
+}
+
+.brand { color: #587065; font-size: 0.78rem; font-weight: 750; letter-spacing: 0.08em; text-transform: uppercase; }
+.title { margin: 8px 0 0; font-family: var(--font-display), "Bricolage Grotesque", "Segoe UI", sans-serif; font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 600; line-height: 1.08; }
+.subtitle { margin: 8px 0 0; color: #6d7971; font-size: 0.94rem; }
+.actions { display: flex; align-items: center; gap: 10px; }
+.refresh { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 13px; border: 1px solid #d8e1da; border-radius: 5px; background: #fff; color: #334238; font-size: 0.85rem; font-weight: 700; }
+.refresh:disabled { opacity: 0.6; }
+.logout { color: #56645b; font-size: 0.85rem; font-weight: 650; text-decoration: none; }
+.content { max-width: 1440px; margin: 0 auto; }
+.stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin: 0 0 34px; border: 1px solid #e0e6e1; background: #fff; }
+.stat { padding: 18px 20px; border-right: 1px solid #e7ece8; }
+.stat:last-child { border-right: 0; }
+.statLabel { display: block; color: #748078; font-size: 0.78rem; }
+.statValue { display: block; margin-top: 9px; font-size: 1.55rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+.section { margin-top: 34px; }
+.sectionHead { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin-bottom: 13px; }
+.sectionTitle { margin: 0; color: #26332a; font-size: 1.15rem; font-weight: 750; }
+.sectionMeta { color: #77827a; font-size: 0.82rem; }
+.search { width: min(320px, 100%); height: 40px; padding: 0 12px; border: 1px solid #dce4de; border-radius: 5px; background: #fff; color: #28342c; }
+.tableWrap { overflow-x: auto; border-top: 1px solid #dce4de; border-bottom: 1px solid #dce4de; background: #fff; }
+.table { width: 100%; border-collapse: collapse; text-align: left; }
+.table th { padding: 12px 14px; color: #758078; font-size: 0.72rem; font-weight: 750; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+.table td { padding: 14px; border-top: 1px solid #e8ede9; color: #39463e; font-size: 0.87rem; }
+.name { color: #202923; font-weight: 700; }
+.muted { display: block; margin-top: 4px; color: #89938d; font-size: 0.77rem; }
+.status { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+.statusDot { width: 8px; height: 8px; border-radius: 50%; background: #aeb8b1; }
+.online { background: #27824e; }
+.badge { display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 4px; background: #edf3ef; color: #496052; font-size: 0.76rem; font-weight: 700; }
+.action { min-height: 32px; padding: 0 10px; border: 1px solid #dce4de; border-radius: 4px; background: #fff; color: #405247; font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+.actionSuspend { color: #a43f35; }
+.action:disabled { opacity: 0.5; cursor: not-allowed; }
+.message { max-width: 660px; margin: 14vh auto 0; padding: 30px; border-top: 3px solid #27824e; background: #fff; }
+.message h1 { margin: 0; font-size: 1.55rem; }
+.message p { color: #68766c; line-height: 1.6; }
+.message a { color: #17633c; font-weight: 700; }
+.error { margin: 12px 0; color: #a43f35; font-size: 0.9rem; }
+.empty { padding: 26px 14px; color: #758078; text-align: center; }
+
+@media (max-width: 900px) {
+  .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .stat:nth-child(3) { border-right: 0; }
+  .stat:nth-child(n + 4) { border-top: 1px solid #e7ece8; }
+}
+
+@media (max-width: 600px) {
+  .page { padding: 24px 14px 36px; }
+  .header { align-items: flex-start; flex-direction: column; margin-bottom: 22px; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat { padding: 15px; }
+  .stat:nth-child(odd) { border-right: 1px solid #e7ece8; }
+  .stat:nth-child(even) { border-right: 0; }
+  .stat:last-child { border-top: 1px solid #e7ece8; }
+  .statValue { font-size: 1.35rem; }
+  .sectionHead { align-items: flex-start; flex-direction: column; }
+  .table { min-width: 760px; }
+}
