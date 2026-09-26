@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -109,6 +110,30 @@ class PedidoServiceTest {
         ArgumentCaptor<Producto> productoCaptor = ArgumentCaptor.forClass(Producto.class);
         verify(productoRepository).save(productoCaptor.capture());
         assertEquals(8, productoCaptor.getValue().getStock());
+    }
+
+    @Test
+    void shouldAcceptPickupAtLeastFifteenMinutesAheadWhenRoundedToWholeMinute() {
+        when(usuarioRepository.findById("u1")).thenReturn(Optional.of(usuario));
+        when(productoRepository.findById("p1")).thenReturn(Optional.of(cafe));
+        when(numeroOrdenService.siguiente(any())).thenReturn(1);
+        when(horarioService.porDia(any())).thenReturn(Optional.empty());
+        when(pedidoRepository.save(any(Pedido.class))).thenAnswer(invocation -> {
+            Pedido pedido = invocation.getArgument(0);
+            pedido.setId("ped15");
+            return pedido;
+        });
+
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("America/Mexico_City"));
+        LocalDateTime pickup = now.plusMinutes(15).withSecond(0).withNano(0);
+        if (pickup.isBefore(now.plusMinutes(15))) {
+            pickup = pickup.plusMinutes(1);
+        }
+        assumeTrue(pickup.toLocalDate().equals(now.toLocalDate()));
+
+        PedidoResponse pedido = pedidoService.crearPedido("u1", pedidoRequest(pickup, "p1", 1));
+
+        assertEquals(PedidoEstado.PENDIENTE, pedido.getEstado());
     }
 
     @Test

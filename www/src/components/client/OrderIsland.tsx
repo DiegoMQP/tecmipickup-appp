@@ -52,6 +52,7 @@ export default function OrderIsland() {
   const reduceMotion = useReducedMotion();
   const detailsId = useId();
   const qrCloseRef = useRef<HTMLButtonElement>(null);
+  const cancellationNoticeOrderRef = useRef<string | null>(null);
   const [order, setOrder] = useState<ActiveOrder | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [open, setOpen] = useState(false);
@@ -60,6 +61,7 @@ export default function OrderIsland() {
   const [cancelBusy, setCancelBusy] = useState(false);
   const [cancelError, setCancelError] = useState("");
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showCancellationNotice, setShowCancellationNotice] = useState(false);
 
   useEffect(() => {
     setOrder(getActiveOrder());
@@ -117,6 +119,21 @@ export default function OrderIsland() {
   }, [order]);
 
   useEffect(() => {
+    if (!order) {
+      cancellationNoticeOrderRef.current = null;
+      return;
+    }
+    if (cancellationNoticeOrderRef.current === order.id) return;
+
+    const pickupTime = order.pickupAt ? new Date(order.pickupAt).getTime() : Number.POSITIVE_INFINITY;
+    if (order.scheduled && pickupTime - now <= 30 * 60_000) {
+      cancellationNoticeOrderRef.current = order.id;
+      setShowCancelConfirm(false);
+      setShowCancellationNotice(true);
+    }
+  }, [order, now]);
+
+  useEffect(() => {
     if (!order?.id) {
       return;
     }
@@ -161,6 +178,7 @@ export default function OrderIsland() {
   }
 
   const status: OrderStatus = orderStatus(order, now);
+  const cancelBlockedByReady = status === "ready" && (!order.scheduled || order.remoteStatus === "ready");
   const copy = statusCopy[status];
   const items = countItems(order);
   const expanded = open || qrOpen;
@@ -171,7 +189,7 @@ export default function OrderIsland() {
 
   async function cancelCurrentOrder() {
     const currentOrder = order;
-    if (!currentOrder || cancelBusy || cancellationWindowClosed || status === "ready") return;
+    if (!currentOrder || cancelBusy || cancellationWindowClosed || cancelBlockedByReady) return;
     setCancelBusy(true);
     setCancelError("");
     const isBackendOrder = /^[0-9a-f]{24}$/i.test(currentOrder.id);
@@ -265,7 +283,7 @@ export default function OrderIsland() {
               </p>
               {cancellationWindowClosed ? (
                 <p className={styles.cancelHint} role="status">Ya no es posible cancelar: faltan 30 minutos o menos para la recolección.</p>
-              ) : status !== "ready" ? (
+              ) : !cancelBlockedByReady ? (
                 <button type="button" className={styles.cancelButton} disabled={cancelBusy} onClick={() => setShowCancelConfirm(true)}>
                   Cancelar pedido
                 </button>
@@ -361,6 +379,41 @@ export default function OrderIsland() {
                   {cancelBusy ? "Cancelando…" : "Confirmar cancelación"}
                 </button>
               </div>
+            </motion.section>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showCancellationNotice ? (
+          <motion.div
+            className={styles.cancelBackdrop}
+            role="presentation"
+            initial={reduceMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.section
+              className={styles.cancelDialog}
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="cancellation-window-title"
+              aria-describedby="cancellation-window-copy"
+              initial={reduceMotion ? false : { opacity: 0, y: 12, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.98 }}
+            >
+              <h2 id="cancellation-window-title">Ya no puedes cancelar este pedido</h2>
+              <p id="cancellation-window-copy">
+                Los pedidos agendados solo se pueden cancelar hasta 30 minutos antes de la hora de recolección.
+              </p>
+              <button
+                type="button"
+                className={styles.cancellationNoticeButton}
+                onClick={() => setShowCancellationNotice(false)}
+              >
+                Entendido
+              </button>
             </motion.section>
           </motion.div>
         ) : null}

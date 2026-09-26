@@ -110,15 +110,15 @@ export default function Kanban6() {
       const allOrders: ActiveOrder[] = [];
       const seen = new Set<string>();
 
-      if (active && !seen.has(active.id)) {
-        seen.add(active.id);
-        allOrders.push(active);
-      }
       for (const o of remoteOrders) {
         if (!seen.has(o.id)) {
           seen.add(o.id);
           allOrders.push(o);
         }
+      }
+      if (active && !seen.has(active.id)) {
+        seen.add(active.id);
+        allOrders.push(active);
       }
       for (const o of localRecent) {
         if (!seen.has(o.id)) {

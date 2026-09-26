@@ -22,6 +22,13 @@ import styles from "./pay.module.css";
 const PaySuccessLottie = dynamic(() => import("../../components/client/PaySuccessLottie"), { ssr: false });
 
 type PickupMode = "soon" | "schedule";
+type PendingCheckout = {
+  lines: CartLine[];
+  total: number;
+  pickupAt: string;
+  scheduled: boolean;
+  startedAt: number;
+};
 
 const ease = [0.32, 0.72, 0, 1] as const;
 
@@ -68,6 +75,11 @@ function mexicoDateKey(date: Date) {
 function mexicoTime(date: Date) {
   const parts = mexicoParts(date);
   return `${parts.hour}:${parts.minute}`;
+}
+
+function soonPickupDate(now: Date) {
+  const earliestTime = now.getTime() + 15 * 60_000;
+  return new Date(Math.ceil(earliestTime / 60_000) * 60_000);
 }
 
 function scheduledPickupTimes(now: Date) {
@@ -130,6 +142,9 @@ export default function PayPage() {
   const [cvv, setCvv] = useState("");
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const [pendingCheckout, setPendingCheckout] = useState<PendingCheckout | null>(null);
+  const [countdown, setCountdown] = useState(5);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
 
@@ -156,6 +171,54 @@ export default function PayPage() {
     const timer = window.setInterval(() => setClock(new Date()), 30_000);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (!pendingCheckout) return;
+
+    const submit = async () => {
+      setBusy(true);
+      setProcessingPayment(true);
+      try {
+        await placeOrder({
+          lines: pendingCheckout.lines,
+          method: "card",
+          total: pendingCheckout.total,
+          pickupAt: pendingCheckout.pickupAt,
+          scheduled: pendingCheckout.scheduled,
+        });
+        clearCart();
+        setNumber("");
+        setCvv("");
+        setExpiry("");
+        const animationDelay = Math.max(0, pendingCheckout.startedAt + 7_000 - Date.now());
+        window.setTimeout(() => {
+          setDone(true);
+          setProcessingPayment(false);
+        }, animationDelay);
+      } catch (cause) {
+        setError(cause instanceof ApiError ? cause.message : "No se pudo confirmar el pedido.");
+        setProcessingPayment(false);
+      } finally {
+        setPendingCheckout(null);
+        setBusy(false);
+      }
+    };
+
+    const updateCountdown = () => {
+      setCountdown(Math.max(0, Math.ceil((pendingCheckout.startedAt + 5_000 - Date.now()) / 1_000)));
+    };
+    updateCountdown();
+    const ticker = window.setInterval(updateCountdown, 100);
+    const submitTimer = window.setTimeout(
+      () => void submit(),
+      Math.max(0, pendingCheckout.startedAt + 5_000 - Date.now()),
+    );
+
+    return () => {
+      window.clearInterval(ticker);
+      window.clearTimeout(submitTimer);
+    };
+  }, [pendingCheckout]);
 
   const scheduleTimes = useMemo(() => clock ? scheduledPickupTimes(clock) : [], [clock]);
 
@@ -186,14 +249,14 @@ export default function PayPage() {
 
   async function pay(event?: FormEvent) {
     event?.preventDefault();
-    if (busy || !lines?.length) {
+    if (busy || pendingCheckout || !lines?.length) {
       return;
     }
 
     const now = new Date();
     let pickupAt: string;
     if (pickupMode === "soon") {
-      const readyAt = new Date(now.getTime() + 15 * 60_000);
+      const readyAt = soonPickupDate(now);
       if (mexicoDateKey(readyAt) !== mexicoDateKey(now)) {
         setError("Ya no quedan horarios disponibles hoy.");
         return;
@@ -221,21 +284,15 @@ export default function PayPage() {
       return;
     }
 
-    setBusy(true);
     setError("");
-
-    try {
-      await placeOrder({ lines, method: "card", total, pickupAt, scheduled: pickupMode === "schedule" });
-      clearCart();
-      setDone(true);
-      setNumber("");
-      setCvv("");
-      setExpiry("");
-    } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : "No se pudo confirmar el pedido.");
-    } finally {
-      setBusy(false);
-    }
+    setCountdown(5);
+    setPendingCheckout({
+      lines,
+      total,
+      pickupAt,
+      scheduled: pickupMode === "schedule",
+      startedAt: Date.now(),
+    });
   }
 
   if (!lines || lines.length === 0) {
@@ -343,6 +400,30 @@ export default function PayPage() {
                 <p className={styles.doneWait}>Confirmando tu pedido…</p>
               )}
             </div>
+          ) : pendingCheckout || processingPayment ? (
+            <div className={styles.checkoutWait} role="status" aria-live="polite">
+              {countdown > 0 ? (
+                <>
+                  <p className={styles.kicker}>Confirma tu pedido</p>
+                  <h2 className={styles.title}>Se enviará en</h2>
+                  <p className={styles.checkoutCountdown}>{countdown}</p>
+                  <button
+                    type="button"
+                    className={styles.cancelCheckout}
+                    onClick={() => setPendingCheckout(null)}
+                    disabled={busy}
+                  >
+                    Cancelar
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className={styles.kicker}>Procesando</p>
+                  <h2 className={styles.title}>Confirmando tu pedido…</h2>
+                  <p className={styles.copy}>Tu pedido se está enviando a la tienda.</p>
+                </>
+              )}
+            </div>
           ) : (
             <form className={styles.form} onSubmit={pay} noValidate aria-busy={busy}>
               <header>
@@ -385,7 +466,7 @@ export default function PayPage() {
                     role="radio"
                     className={`${styles.chip} ${pickupMode === "soon" ? styles.chipOn : ""}`}
                     aria-checked={pickupMode === "soon"}
-                    disabled={!clock || mexicoDateKey(new Date(Date.now() + 15 * 60_000)) !== mexicoDateKey(new Date())}
+                    disabled={!clock || mexicoDateKey(soonPickupDate(clock)) !== mexicoDateKey(clock)}
                     onClick={() => setPickupMode("soon")}
                   >
                     Listo en 15 min
