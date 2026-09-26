@@ -87,16 +87,18 @@ public class CatalogoSeeder implements CommandLineRunner {
         if (restaurantEmail != null && !restaurantEmail.isBlank()
             && restaurantPassword != null && !restaurantPassword.isBlank()
             && restaurantMatricula != null && !restaurantMatricula.isBlank()
-            && restaurantStoreId != null && !restaurantStoreId.isBlank()
-            && !usuarioRepository.existsByEmail(restaurantEmail.trim())) {
-            usuarioRepository.save(Usuario.builder()
-            .nombre(restaurantName)
-            .email(restaurantEmail.trim())
-            .password(passwordEncoder.encode(restaurantPassword))
-                .role(Role.RESTAURANT)
-            .matricula(restaurantMatricula.trim())
-            .tiendaId(restaurantStoreId.trim())
-                .build());
+            && restaurantStoreId != null && !restaurantStoreId.isBlank()) {
+            String normalizedEmail = restaurantEmail.trim().toLowerCase();
+            Usuario restaurantUser = usuarioRepository.findByEmail(normalizedEmail)
+                    .orElseGet(() -> Usuario.builder().email(normalizedEmail).build());
+            restaurantUser.setNombre(restaurantName);
+            restaurantUser.setEmail(normalizedEmail);
+            restaurantUser.setPassword(passwordEncoder.encode(restaurantPassword));
+            restaurantUser.setRole(Role.RESTAURANT);
+            restaurantUser.setMatricula(restaurantMatricula.trim());
+            restaurantUser.setTiendaId(restaurantStoreId.trim());
+            restaurantUser.setActivo(true);
+            usuarioRepository.save(restaurantUser);
         }
 
             if (adminEmail != null && !adminEmail.isBlank() && adminPassword != null && !adminPassword.isBlank()
