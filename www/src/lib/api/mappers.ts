@@ -103,7 +103,7 @@ export function mapProduct(raw: unknown): MenuItem | null {
   const id = asString(pick(row, "id", "productoId", "idProducto"), name ? slugify(name) : "");
   const storeId = asString(pick(row, "tiendaId", "restauranteId", "idRestaurante", "restaurantId"));
 
-  if (storeId === "tienda-green") {
+  if (storeId === "tienda-green" || storeId === "tienda-chilaquileria") {
     return null;
   }
 
@@ -179,7 +179,14 @@ export function mapRestaurant(raw: unknown, index: number): Restaurant | null {
   }
 
   const slug = asString(pick(row, "slug"), slugify(name));
-  if (id === "tienda-green" || slug === "don-chilaquil" || slugify(name) === "don-chilaquil") {
+  if (
+    id === "tienda-green" ||
+    id === "tienda-chilaquileria" ||
+    slug === "don-chilaquil" ||
+    slugify(name) === "don-chilaquil" ||
+    slug === "chilaquileria" ||
+    slugify(name) === "chilaquileria"
+  ) {
     return null;
   }
 

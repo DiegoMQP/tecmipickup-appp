@@ -148,6 +148,17 @@ public class CatalogoSeeder implements CommandLineRunner {
                 producto.setActivo(false);
                 productoRepository.save(producto);
             });
+        tiendaRepository.findById("tienda-chilaquileria").ifPresent(tienda -> {
+            tienda.setActivo(false);
+            tienda.setAceptaPedidos(false);
+            tiendaRepository.save(tienda);
+        });
+        productoRepository.findByTiendaIdOrderByNombreAsc("tienda-chilaquileria").stream()
+                .filter(producto -> Boolean.TRUE.equals(producto.getActivo()))
+                .forEach(producto -> {
+                    producto.setActivo(false);
+                    productoRepository.save(producto);
+                });
 
         productoRepository.findAll().stream()
             .filter(producto -> producto.getTiendaId() == null
