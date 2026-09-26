@@ -70,7 +70,8 @@ public class AuthService {
     }
 
     public AuthResponse login(AuthRequest request) {
-        Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
+        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
+        Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> ApiException.unauthorized("Credenciales inválidas."));
 
         if (Boolean.FALSE.equals(usuario.getActivo())
